@@ -4,7 +4,7 @@ Create ISO 9660 disc images from a folder, entirely in the browser. It's a
 WebAssembly wrapper around [hadris-iso](https://github.com/hxyulin/hadris), a
 pure Rust ISO library.
 
-**[Try the demo →](https://OWNER.github.io/isowasm/)**: pick a folder and download an ISO. Nothing is uploaded.
+**[Try the demo →](https://shubhendusaurabh.github.io/isowasm/)**: pick a folder and download an ISO. Nothing is uploaded.
 
 - **Works everywhere:** Joliet (Windows long and Unicode names), Rock Ridge (Linux/macOS names, permissions, timestamps) and plain ISO 9660 in the same image
 - **Large folders:** files are streamed in 4 MiB pieces and the image is written to the browser's private file system (OPFS), so neither has to fit in memory. Files over 4 GiB are supported (multi-extent).
