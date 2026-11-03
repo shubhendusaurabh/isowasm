@@ -1,0 +1,6 @@
+target/
+pkg/
+demo/pkg/
+node_modules/
+*.iso
+*.log

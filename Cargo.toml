@@ -1,0 +1,33 @@
+[package]
+name = "isowasm"
+version = "0.1.0"
+edition = "2024"
+authors = ["Shubhendu"]
+description = "Create ISO 9660 images (Joliet, Rock Ridge, El Torito) in the browser via WebAssembly, powered by hadris-iso"
+license = "ISC"
+repository = "https://github.com/OWNER/isowasm"
+keywords = ["iso9660", "wasm", "joliet", "rock-ridge", "browser"]
+categories = ["wasm", "filesystem"]
+publish = false
+
+[dependencies]
+chrono = { version = "0.4.45", default-features = false, features = ["wasmbind"] }
+getrandom = { version = "0.4", features = ["wasm_js"] }
+hadris-iso = { version = "2.5", features = ["write", "joliet", "unstable-streaming"] }
+js-sys = "0.3.107"
+serde = { version = "1.0.229", features = ["derive"] }
+serde-wasm-bindgen = "0.6.5"
+wasm-bindgen = "0.2.130"
+web-sys = { version = "0.3.107", features = ["FileSystemSyncAccessHandle", "FileSystemReadWriteOptions"] }
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+
+# Patched: DecDateTime::now() used std::time::SystemTime, which panics in the browser.
+[patch.crates-io]
+hadris-iso = { path = "vendor/hadris-iso" }

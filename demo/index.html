@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Folder to ISO</title>
+<meta name="description" content="Turn a folder into an ISO disc image, right in your browser. Free and private: your files never leave your computer.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%232f5bd3'/%3E%3Ccircle cx='16' cy='16' r='4' fill='white'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f5f5f2; --card: #ffffff; --text: #1c1c1a; --muted: #6a6a64; --line: #deded8;
+    --accent: #2f5bd3; --accent-hover: #244bb5; --on-accent: #ffffff; --accent-soft: #eaf0fd;
+    --ok: #1d7a43; --ok-soft: #e7f5ec; --err: #b3261e; --err-soft: #fbeceb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151514; --card: #1f1f1d; --text: #ededE8; --muted: #9b9b94; --line: #34342f;
+      --accent: #7d9bff; --accent-hover: #98b0ff; --on-accent: #0d1222; --accent-soft: #1d2438;
+      --ok: #62d08f; --ok-soft: #15291d; --err: #ff8a80; --err-soft: #331917;
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 48px 16px 40px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; letter-spacing: -0.015em; }
+  .lede { color: var(--muted); margin: 0 0 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
+
+  button, .button {
+    font: inherit; font-weight: 600; border-radius: 10px; cursor: pointer; text-decoration: none;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 20px; border: 1px solid var(--line); background: var(--card); color: var(--text);
+  }
+  .primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .big { width: 100%; padding: 15px 20px; font-size: 17px; }
+  .link { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 500; }
+  button:focus-visible, .button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  #drop {
+    border: 2px dashed var(--line); border-radius: 12px; padding: 40px 16px; text-align: center;
+    transition: background .15s, border-color .15s;
+  }
+  #drop.over { background: var(--accent-soft); border-color: var(--accent); }
+  #drop svg { color: var(--muted); margin-bottom: 8px; }
+  #drop p { margin: 0 0 16px; color: var(--muted); }
+
+  .folder { display: flex; gap: 14px; align-items: center; }
+  .folder svg { flex: none; color: var(--accent); }
+  .folder .name { font-weight: 600; overflow-wrap: anywhere; }
+  .folder .meta { color: var(--muted); font-size: 14px; }
+  .folder .link { margin-left: auto; flex: none; }
+
+  label { display: block; font-size: 14px; color: var(--muted); margin: 22px 0 6px; }
+  input[type=text] {
+    font: inherit; width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--bg); color: var(--text); text-transform: uppercase;
+  }
+  .hint { font-size: 13px; color: var(--muted); margin: 6px 0 22px; }
+
+  .bar { height: 10px; border-radius: 99px; background: var(--accent-soft); overflow: hidden; margin: 18px 0 10px; }
+  .bar > div { height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .2s; }
+  .row { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 14px; }
+
+  .done { text-align: center; }
+  .done .check { width: 52px; height: 52px; border-radius: 50%; background: var(--ok-soft); color: var(--ok);
+                 display: grid; place-items: center; margin: 0 auto 12px; }
+  .done h2, .working h2 { font-size: 20px; margin: 0 0 4px; }
+  .done p { color: var(--muted); margin: 0 0 20px; overflow-wrap: anywhere; }
+  .done .again { margin-top: 14px; }
+
+  .alert { margin-top: 16px; padding: 12px 14px; border-radius: 10px; font-size: 15px;
+           background: var(--err-soft); color: var(--err); }
+
+  ul.facts { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 10px; color: var(--muted); font-size: 14px; }
+  ul.facts li { display: flex; gap: 10px; align-items: flex-start; }
+  ul.facts svg { flex: none; margin-top: 2px; color: var(--ok); }
+  footer { margin-top: 32px; color: var(--muted); font-size: 13px; text-align: center; }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Turn a folder into an ISO</h1>
+  <p class="lede">Make a disc image you can burn, mount or use in a virtual machine. Free, and your files never leave your computer.</p>
+
+  <!-- Step 1: pick a folder -->
+  <section class="card" id="step-pick">
+    <div id="drop">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <p>Drag a folder here</p>
+      <button class="primary" id="pick">Choose a folder</button>
+      <input id="dirInput" type="file" webkitdirectory multiple hidden>
+    </div>
+    <div class="alert" id="pick-error" role="alert" hidden></div>
+  </section>
+
+  <!-- Step 2: confirm and create -->
+  <section class="card" id="step-ready" hidden>
+    <div class="folder">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <div>
+        <div class="name" id="folder-name"></div>
+        <div class="meta" id="folder-meta"></div>
+      </div>
+      <button class="link" id="change">Change</button>
+    </div>
+    <label for="label">Disc name</label>
+    <input id="label" type="text" maxlength="32" autocomplete="off" spellcheck="false">
+    <p class="hint">Shown when the disc is opened. Letters, numbers and _ only.</p>
+    <button class="primary big" id="create">Create ISO</button>
+    <div class="alert" id="ready-error" role="alert" hidden></div>
+  </section>
+
+  <!-- Step 3: working -->
+  <section class="card working" id="step-working" hidden aria-live="polite">
+    <h2>Creating your ISO…</h2>
+    <div class="row"><span>Keep this tab open until it finishes.</span></div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="bar"><div></div></div>
+    <div class="row"><span id="progress-text">Starting…</span><span id="eta"></span></div>
+  </section>
+
+  <!-- Step 4: done -->
+  <section class="card done" id="step-done" hidden>
+    <div class="check"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h2>Your ISO is ready</h2>
+    <p id="done-text"></p>
+    <a class="button primary big" id="download">Download</a>
+    <button class="link again" id="again">Make another</button>
+  </section>
+
+  <ul class="facts">
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Private: everything happens in your browser. Nothing is uploaded.</li>
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Works on Windows, macOS and Linux, with long and non-English file names.</li>
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Large folders are fine; the image is built on disk, not in memory.</li>
+  </ul>
+
+  <footer>
+    Open source · <a href="https://github.com/OWNER/isowasm">isowasm</a> · built on <a href="https://github.com/hxyulin/hadris">hadris-iso</a>
+  </footer>
+</main>
+<script type="module" src="./main.js"></script>
+</body>
+</html>

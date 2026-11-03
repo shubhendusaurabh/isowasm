@@ -1,0 +1,20 @@
+--- a/src/types.rs
++++ b/src/types.rs
+@@ -2,7 +2,7 @@
+ pub use hadris_common::types::{endian::*, number::*};
+ 
+ #[cfg(feature = "std")]
+-use std::time::SystemTime;
++// use std::time::SystemTime; // isowasm: see DecDateTime::now
+ 
+ #[cfg(feature = "alloc")]
+ use alloc::vec::Vec;
+@@ -653,7 +653,7 @@
+     /// Performs the `now` operation.
+     pub fn now() -> Self {
+         use chrono::{DateTime, Datelike, Timelike, Utc};
+-        let now: DateTime<Utc> = SystemTime::now().into();
++        let now: DateTime<Utc> = Utc::now(); // isowasm: SystemTime::now() panics on wasm32-unknown-unknown
+         Self {
+             year: Self::decimal(now.year() as u32),
+             month: Self::decimal(now.month()),
